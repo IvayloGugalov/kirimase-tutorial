@@ -53,6 +53,7 @@ model Key {
 model Restaurant {
   id           String        @id @default(cuid())
   name         String
+  logo         String?
   description  String
   rating       Int?
   createdAt    DateTime      @default(now())

@@ -1,241 +1,209 @@
-import { z } from "zod";
+import { z } from 'zod'
 
-import { useState, useTransition } from "react";
-import { useFormStatus } from "react-dom";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useValidatedForm } from "@/lib/hooks/useValidatedForm";
+import { useState, useTransition } from 'react'
+import { useFormStatus } from 'react-dom'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { useValidatedForm } from '@/lib/hooks/useValidatedForm'
 
-import { type Action, cn } from "@/lib/utils";
-import { type TAddOptimistic } from "@/app/(app)/restaurants/useOptimisticRestaurants";
+import { type Action, cn } from '@/lib/utils'
+import { type TAddOptimistic } from '@/app/(app)/restaurants/useOptimisticRestaurants'
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useBackPath } from "@/components/shared/BackButton";
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { useBackPath } from '@/components/shared/BackButton'
 
-
-
-
-import { type Restaurant, insertRestaurantParams } from "@/lib/db/schema/restaurants";
-import {
-  createRestaurantAction,
-  deleteRestaurantAction,
-  updateRestaurantAction,
-} from "@/lib/actions/restaurants";
-
+import { type Restaurant, insertRestaurantParams } from '@/lib/db/schema/restaurants'
+import { createRestaurantAction, deleteRestaurantAction, updateRestaurantAction } from '@/lib/actions/restaurants'
 
 const RestaurantForm = ({
-  
   restaurant,
   openModal,
   closeModal,
   addOptimistic,
   postSuccess,
 }: {
-  restaurant?: Restaurant | null;
-  
-  openModal?: (restaurant?: Restaurant) => void;
-  closeModal?: () => void;
-  addOptimistic?: TAddOptimistic;
-  postSuccess?: () => void;
+  restaurant?: Restaurant | null
+
+  openModal?: (restaurant?: Restaurant) => void
+  closeModal?: () => void
+  addOptimistic?: TAddOptimistic
+  postSuccess?: () => void
 }) => {
-  const { errors, hasErrors, setErrors, handleChange } =
-    useValidatedForm<Restaurant>(insertRestaurantParams);
-  const editing = !!restaurant?.id;
-  
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [pending, startMutation] = useTransition();
+  const { errors, hasErrors, setErrors, handleChange } = useValidatedForm<Restaurant>(insertRestaurantParams)
+  const editing = !!restaurant?.id
 
-  const router = useRouter();
-  const backpath = useBackPath("restaurants");
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [pending, startMutation] = useTransition()
 
+  const router = useRouter()
+  const backpath = useBackPath('restaurants')
 
-  const onSuccess = (
-    action: Action,
-    data?: { error: string; values: Restaurant },
-  ) => {
-    const failed = Boolean(data?.error);
+  const onSuccess = (action: Action, data?: { error: string; values: Restaurant }) => {
+    const failed = Boolean(data?.error)
     if (failed) {
-      openModal && openModal(data?.values);
+      openModal && openModal(data?.values)
       toast.error(`Failed to ${action}`, {
-        description: data?.error ?? "Error",
-      });
+        description: data?.error ?? 'Error',
+      })
     } else {
-      router.refresh();
-      postSuccess && postSuccess();
-      toast.success(`Restaurant ${action}d!`);
-      if (action === "delete") router.push(backpath);
+      router.refresh()
+      postSuccess && postSuccess()
+      toast.success(`Restaurant ${action}d!`)
+      if (action === 'delete') router.push(backpath)
     }
-  };
+  }
 
   const handleSubmit = async (data: FormData) => {
-    setErrors(null);
+    setErrors(null)
 
-    const payload = Object.fromEntries(data.entries());
-    const restaurantParsed = await insertRestaurantParams.safeParseAsync({  ...payload });
+    const payload = Object.fromEntries(data.entries())
+    const restaurantParsed = await insertRestaurantParams.safeParseAsync({ ...payload })
     if (!restaurantParsed.success) {
-      setErrors(restaurantParsed?.error.flatten().fieldErrors);
-      return;
+      setErrors(restaurantParsed?.error.flatten().fieldErrors)
+      return
     }
 
-    closeModal && closeModal();
-    const values = restaurantParsed.data;
+    closeModal && closeModal()
+    const values = restaurantParsed.data
     const pendingRestaurant: Restaurant = {
       updatedAt: restaurant?.updatedAt ?? new Date(),
       createdAt: restaurant?.createdAt ?? new Date(),
-      id: restaurant?.id ?? "",
+      id: restaurant?.id ?? '',
       ...values,
-    };
+    }
     try {
       startMutation(async () => {
-        addOptimistic && addOptimistic({
-          data: pendingRestaurant,
-          action: editing ? "update" : "create",
-        });
+        addOptimistic &&
+          addOptimistic({
+            data: pendingRestaurant,
+            action: editing ? 'update' : 'create',
+          })
 
         const error = editing
           ? await updateRestaurantAction({ ...values, id: restaurant.id })
-          : await createRestaurantAction(values);
+          : await createRestaurantAction(values)
 
         const errorFormatted = {
-          error: error ?? "Error",
-          values: pendingRestaurant 
-        };
-        onSuccess(
-          editing ? "update" : "create",
-          error ? errorFormatted : undefined,
-        );
-      });
+          error: error ?? 'Error',
+          values: pendingRestaurant,
+        }
+        onSuccess(editing ? 'update' : 'create', error ? errorFormatted : undefined)
+      })
     } catch (e) {
       if (e instanceof z.ZodError) {
-        setErrors(e.flatten().fieldErrors);
+        setErrors(e.flatten().fieldErrors)
       }
     }
-  };
+  }
 
   return (
-    <form action={handleSubmit} onChange={handleChange} className={"space-y-8"}>
+    <form
+      action={handleSubmit}
+      onChange={handleChange}
+      className={'space-y-8'}
+    >
       {/* Schema fields start */}
-              <div>
-        <Label
-          className={cn(
-            "mb-2 inline-block",
-            errors?.name ? "text-destructive" : "",
-          )}
-        >
+      <div>
+        <Label className={cn('mb-2 inline-block', errors?.name ? 'text-destructive' : '')}>
           Name
         </Label>
         <Input
-          type="text"
-          name="name"
-          className={cn(errors?.name ? "ring ring-destructive" : "")}
-          defaultValue={restaurant?.name ?? ""}
+          type='text'
+          name='name'
+          className={cn(errors?.name ? 'ring ring-destructive' : '')}
+          defaultValue={restaurant?.name ?? ''}
         />
-        {errors?.name ? (
-          <p className="text-xs text-destructive mt-2">{errors.name[0]}</p>
-        ) : (
-          <div className="h-6" />
-        )}
+        {errors?.name ? <p className='text-xs text-destructive mt-2'>{errors.name[0]}</p> : <div className='h-6' />}
       </div>
-        <div>
-        <Label
-          className={cn(
-            "mb-2 inline-block",
-            errors?.description ? "text-destructive" : "",
-          )}
-        >
+      <div>
+        <Label className={cn('mb-2 inline-block', errors?.description ? 'text-destructive' : '')}>
           Description
         </Label>
         <Input
-          type="text"
-          name="description"
-          className={cn(errors?.description ? "ring ring-destructive" : "")}
-          defaultValue={restaurant?.description ?? ""}
+          type='text'
+          name='description'
+          className={cn(errors?.description ? 'ring ring-destructive' : '')}
+          defaultValue={restaurant?.description ?? ''}
         />
-        {errors?.description ? (
-          <p className="text-xs text-destructive mt-2">{errors.description[0]}</p>
-        ) : (
-          <div className="h-6" />
-        )}
+        {errors?.description ? <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p> : <div className='h-6' />}
       </div>
-        <div>
-        <Label
-          className={cn(
-            "mb-2 inline-block",
-            errors?.rating ? "text-destructive" : "",
-          )}
-        >
+      <div>
+        <Label className={cn('mb-2 inline-block', errors?.logo ? 'text-destructive' : '')}>
+          Logo
+        </Label>
+        <Input
+          type='text'
+          name='logo'
+          className={cn(errors?.logo ? 'ring ring-destructive' : '')}
+          defaultValue={restaurant?.logo ?? ''}
+        />
+        {errors?.description ? <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p> : <div className='h-6' />}
+      </div>
+      <div>
+        <Label className={cn('mb-2 inline-block', errors?.rating ? 'text-destructive' : '')}>
           Rating
         </Label>
         <Input
-          type="text"
-          name="rating"
-          className={cn(errors?.rating ? "ring ring-destructive" : "")}
-          defaultValue={restaurant?.rating ?? ""}
+          type='text'
+          name='rating'
+          className={cn(errors?.rating ? 'ring ring-destructive' : '')}
+          defaultValue={restaurant?.rating ?? ''}
         />
-        {errors?.rating ? (
-          <p className="text-xs text-destructive mt-2">{errors.rating[0]}</p>
-        ) : (
-          <div className="h-6" />
-        )}
+        {errors?.rating ? <p className='text-xs text-destructive mt-2'>{errors.rating[0]}</p> : <div className='h-6' />}
       </div>
       {/* Schema fields end */}
 
       {/* Save Button */}
-      <SaveButton errors={hasErrors} editing={editing} />
+      <SaveButton
+        errors={hasErrors}
+        editing={editing}
+      />
 
       {/* Delete Button */}
       {editing ? (
         <Button
-          type="button"
+          type='button'
           disabled={isDeleting || pending || hasErrors}
-          variant={"destructive"}
+          variant={'destructive'}
           onClick={() => {
-            setIsDeleting(true);
-            closeModal && closeModal();
+            setIsDeleting(true)
+            closeModal && closeModal()
             startMutation(async () => {
-              addOptimistic && addOptimistic({ action: "delete", data: restaurant });
-              const error = await deleteRestaurantAction(restaurant.id);
-              setIsDeleting(false);
+              addOptimistic && addOptimistic({ action: 'delete', data: restaurant })
+              const error = await deleteRestaurantAction(restaurant.id)
+              setIsDeleting(false)
               const errorFormatted = {
-                error: error ?? "Error",
+                error: error ?? 'Error',
                 values: restaurant,
-              };
+              }
 
-              onSuccess("delete", error ? errorFormatted : undefined);
-            });
+              onSuccess('delete', error ? errorFormatted : undefined)
+            })
           }}
         >
-          Delet{isDeleting ? "ing..." : "e"}
+          Delet{isDeleting ? 'ing...' : 'e'}
         </Button>
       ) : null}
     </form>
-  );
-};
+  )
+}
 
-export default RestaurantForm;
+export default RestaurantForm
 
-const SaveButton = ({
-  editing,
-  errors,
-}: {
-  editing: Boolean;
-  errors: boolean;
-}) => {
-  const { pending } = useFormStatus();
-  const isCreating = pending && editing === false;
-  const isUpdating = pending && editing === true;
+const SaveButton = ({ editing, errors }: { editing: Boolean; errors: boolean }) => {
+  const { pending } = useFormStatus()
+  const isCreating = pending && editing === false
+  const isUpdating = pending && editing === true
   return (
     <Button
-      type="submit"
-      className="mr-2"
+      type='submit'
+      className='mr-2'
       disabled={isCreating || isUpdating || errors}
       aria-disabled={isCreating || isUpdating || errors}
     >
-      {editing
-        ? `Sav${isUpdating ? "ing..." : "e"}`
-        : `Creat${isCreating ? "ing..." : "e"}`}
+      {editing ? `Sav${isUpdating ? 'ing...' : 'e'}` : `Creat${isCreating ? 'ing...' : 'e'}`}
     </Button>
-  );
-};
+  )
+}

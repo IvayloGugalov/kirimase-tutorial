@@ -4,6 +4,7 @@ import { CompleteReservation, relatedReservationSchema } from "./index"
 export const restaurantSchema = z.object({
   id: z.string(),
   name: z.string(),
+  logo: z.string().nullish(),
   description: z.string(),
   rating: z.number().int().nullish(),
   createdAt: z.date(),
