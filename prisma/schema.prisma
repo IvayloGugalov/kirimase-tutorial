@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider              = "zod-prisma"
+  output                = "./zod"
+  relationModel         = true
+  modelCase             = "camelCase"
+  modelSuffix           = "Schema"
+  useDecimalJs          = true
+  prismaJsonNullability = true
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @unique
+
+  username String
+  name     String?
+  email    String?
+
+  auth_session Session[]
+  key          Key[]
+}
+
+model Session {
+  id             String @id @unique
+  user_id        String
+  active_expires BigInt
+  idle_expires   BigInt
+  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Key {
+  id              String  @id @unique
+  hashed_password String?
+  user_id         String
+  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Restaurant {
+  id           String        @id @default(cuid())
+  name         String
+  description  String
+  rating       Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+
+  @@index([name])
+}
+
+model Reservation {
+  id              String     @id @default(cuid())
+  name            String
+  occupants       Int
+  description     String
+  reservationDate DateTime
+  status          String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurantId    String
+  userId          String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  review          Review?
+
+  @@index([userId])
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  information   String
+  rating        Int?
+  restaurantId  String
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  reservationId String      @unique
+  userId        String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+}
