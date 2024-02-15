@@ -15,7 +15,11 @@ import { Label } from '@/components/ui/label'
 import { useBackPath } from '@/components/shared/BackButton'
 
 import { type Restaurant, insertRestaurantParams } from '@/lib/db/schema/restaurants'
-import { createRestaurantAction, deleteRestaurantAction, updateRestaurantAction } from '@/lib/actions/restaurants'
+import {
+  createRestaurantAction,
+  deleteRestaurantAction,
+  updateRestaurantAction,
+} from '@/lib/actions/restaurants'
 
 const RestaurantForm = ({
   restaurant,
@@ -31,7 +35,8 @@ const RestaurantForm = ({
   addOptimistic?: TAddOptimistic
   postSuccess?: () => void
 }) => {
-  const { errors, hasErrors, setErrors, handleChange } = useValidatedForm<Restaurant>(insertRestaurantParams)
+  const { errors, hasErrors, setErrors, handleChange } =
+    useValidatedForm<Restaurant>(insertRestaurantParams)
   const editing = !!restaurant?.id
 
   const [isDeleting, setIsDeleting] = useState(false)
@@ -99,14 +104,12 @@ const RestaurantForm = ({
   }
 
   return (
-    <form
-      action={handleSubmit}
-      onChange={handleChange}
-      className={'space-y-8'}
-    >
+    <form action={handleSubmit} onChange={handleChange} className={'space-y-8'}>
       {/* Schema fields start */}
       <div>
-        <Label className={cn('mb-2 inline-block', errors?.name ? 'text-destructive' : '')}>
+        <Label
+          className={cn('mb-2 inline-block', errors?.name ? 'text-destructive' : '')}
+        >
           Name
         </Label>
         <Input
@@ -115,10 +118,19 @@ const RestaurantForm = ({
           className={cn(errors?.name ? 'ring ring-destructive' : '')}
           defaultValue={restaurant?.name ?? ''}
         />
-        {errors?.name ? <p className='text-xs text-destructive mt-2'>{errors.name[0]}</p> : <div className='h-6' />}
+        {errors?.name ? (
+          <p className='text-xs text-destructive mt-2'>{errors.name[0]}</p>
+        ) : (
+          <div className='h-6' />
+        )}
       </div>
       <div>
-        <Label className={cn('mb-2 inline-block', errors?.description ? 'text-destructive' : '')}>
+        <Label
+          className={cn(
+            'mb-2 inline-block',
+            errors?.description ? 'text-destructive' : ''
+          )}
+        >
           Description
         </Label>
         <Input
@@ -127,10 +139,16 @@ const RestaurantForm = ({
           className={cn(errors?.description ? 'ring ring-destructive' : '')}
           defaultValue={restaurant?.description ?? ''}
         />
-        {errors?.description ? <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p> : <div className='h-6' />}
+        {errors?.description ? (
+          <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p>
+        ) : (
+          <div className='h-6' />
+        )}
       </div>
       <div>
-        <Label className={cn('mb-2 inline-block', errors?.logo ? 'text-destructive' : '')}>
+        <Label
+          className={cn('mb-2 inline-block', errors?.logo ? 'text-destructive' : '')}
+        >
           Logo
         </Label>
         <Input
@@ -139,10 +157,16 @@ const RestaurantForm = ({
           className={cn(errors?.logo ? 'ring ring-destructive' : '')}
           defaultValue={restaurant?.logo ?? ''}
         />
-        {errors?.description ? <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p> : <div className='h-6' />}
+        {errors?.description ? (
+          <p className='text-xs text-destructive mt-2'>{errors.description[0]}</p>
+        ) : (
+          <div className='h-6' />
+        )}
       </div>
       <div>
-        <Label className={cn('mb-2 inline-block', errors?.rating ? 'text-destructive' : '')}>
+        <Label
+          className={cn('mb-2 inline-block', errors?.rating ? 'text-destructive' : '')}
+        >
           Rating
         </Label>
         <Input
@@ -151,15 +175,16 @@ const RestaurantForm = ({
           className={cn(errors?.rating ? 'ring ring-destructive' : '')}
           defaultValue={restaurant?.rating ?? ''}
         />
-        {errors?.rating ? <p className='text-xs text-destructive mt-2'>{errors.rating[0]}</p> : <div className='h-6' />}
+        {errors?.rating ? (
+          <p className='text-xs text-destructive mt-2'>{errors.rating[0]}</p>
+        ) : (
+          <div className='h-6' />
+        )}
       </div>
       {/* Schema fields end */}
 
       {/* Save Button */}
-      <SaveButton
-        errors={hasErrors}
-        editing={editing}
-      />
+      <SaveButton errors={hasErrors} editing={editing} />
 
       {/* Delete Button */}
       {editing ? (
@@ -203,7 +228,9 @@ const SaveButton = ({ editing, errors }: { editing: Boolean; errors: boolean }) 
       disabled={isCreating || isUpdating || errors}
       aria-disabled={isCreating || isUpdating || errors}
     >
-      {editing ? `Sav${isUpdating ? 'ing...' : 'e'}` : `Creat${isCreating ? 'ing...' : 'e'}`}
+      {editing
+        ? `Sav${isUpdating ? 'ing...' : 'e'}`
+        : `Creat${isCreating ? 'ing...' : 'e'}`}
     </Button>
   )
 }
