@@ -1,5 +1,5 @@
-import * as z from "zod"
-import { CompleteUser, relatedUserSchema } from "./index"
+import * as z from 'zod'
+import { CompleteUser, relatedUserSchema } from './index'
 
 export const keySchema = z.object({
   id: z.string(),
@@ -16,6 +16,8 @@ export interface CompleteKey extends z.infer<typeof keySchema> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const relatedKeySchema: z.ZodSchema<CompleteKey> = z.lazy(() => keySchema.extend({
-  user: relatedUserSchema,
-}))
+export const relatedKeySchema: z.ZodSchema<CompleteKey> = z.lazy(() =>
+  keySchema.extend({
+    user: relatedUserSchema,
+  })
+)

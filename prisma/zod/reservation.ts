@@ -1,5 +1,10 @@
-import * as z from "zod"
-import { CompleteRestaurant, relatedRestaurantSchema, CompleteReview, relatedReviewSchema } from "./index"
+import * as z from 'zod'
+import {
+  CompleteRestaurant,
+  relatedRestaurantSchema,
+  CompleteReview,
+  relatedReviewSchema,
+} from './index'
 
 export const reservationSchema = z.object({
   id: z.string(),
@@ -24,7 +29,9 @@ export interface CompleteReservation extends z.infer<typeof reservationSchema> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const relatedReservationSchema: z.ZodSchema<CompleteReservation> = z.lazy(() => reservationSchema.extend({
-  restaurant: relatedRestaurantSchema,
-  review: relatedReviewSchema.nullish(),
-}))
+export const relatedReservationSchema: z.ZodSchema<CompleteReservation> = z.lazy(() =>
+  reservationSchema.extend({
+    restaurant: relatedRestaurantSchema,
+    review: relatedReviewSchema.nullish(),
+  })
+)
