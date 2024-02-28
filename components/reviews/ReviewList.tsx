@@ -16,16 +16,16 @@ import { PlusIcon } from 'lucide-react'
 type TOpenModal = (review?: Review) => void
 
 export default function ReviewList({
-  review,
+  reviews,
   reservations,
   reservationId,
 }: {
-  review: CompleteReview
+  reviews: CompleteReview[]
   reservations: Reservation[]
   reservationId?: ReservationId
 }) {
   const { optimisticReviews, addOptimisticReview } = useOptimisticReviews(
-    review,
+    reviews,
     reservations
   )
   const [open, setOpen] = useState(false)
